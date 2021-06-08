@@ -92,3 +92,44 @@
         virtual class cannot be instantiated, only to be inherited.
         virtual class may have pure virtual methods, which is a prototype only(no implementation). The subclass
         must provide implementation
+
+5. package
+    example:
+
+    //declaration of a package
+    package package_name
+        typedef enum {ADD,SUB} opcode_t;
+    endpackage
+    //use package
+    //import everything
+    import package_name::*;
+    //import individually
+    output logic result;
+    case()
+        ADD:result = 0;
+    endcase 
+    import package_name::ADD;
+    //use individually
+    output logic result;
+    case()
+        package_name::ADD:result = 0;
+    endcase 
+    
+6. rand, randc, constraint{}
+    rand:randomly choose within the constraint. possibility of getting each i is the same.
+    randc: rand cycle. i that's already been chosen will only be chosen again if all possible i have been chosen
+
+    example:
+
+    class packet_rand;
+        rand bit [31:0] test1, test2;
+        randc bit [1:0] test3;
+        constraint c {test1 > 5; test1 < 10;}
+    endclass //packet_rand
+    packet_rand p;
+    initial begin
+        p = new(); //create a packet_rand
+        assert (p.randomize()) 
+        else   $fatal(0, "randomization failed"); //is constraint is test1>5, test1<6, then randomization failed
+        //if failed, test1,2,3 all failed
+    end
