@@ -3,7 +3,7 @@
     cannot be guaranteed, like when multiple processes reading and writing the same variable synchronized to
     the same event region.
     (2). clocking blocks makes timing explicit.
-    syntax:
+    //syntax:
 
     clocking name @(clocking_event);
         default input intput_skew output output_skew;
@@ -11,7 +11,7 @@
         output output_signals;
     endclocking:name
 
-    example:
+    //example:
     clocking drv_ck @(posedge clk);
         default input #1ns output #1ns; (the input and output skew can also use steps. e.g. input #1step output #0)
         output ch_data, ch_valid;
@@ -21,7 +21,7 @@
     (4). A clocking can only be declared inside a module, interface(most often), checker, or program.
 
 2. function automatic vs static 
-    (1). syntax
+    (1). //syntax
         function automatic/static type(e.g. int) name(type argument); endfunction
     (2). automatic vs static
         automatic: new value will be created when entering the function. destoryed when leave the function.
@@ -94,7 +94,7 @@
         must provide implementation
 
 5. package
-    example:
+    //example:
 
     //declaration of a package
     package package_name
@@ -115,11 +115,14 @@
         package_name::ADD:result = 0;
     endcase 
     
-6. rand, randc, constraint{}
+6.  randomization keywords 
+
+    rand, randc, constraint{}:
+    systemverilog can only randomize 2-value datatypes. e.g. bits. if rand logic, x and z will not be randomized
     rand:randomly choose within the constraint. possibility of getting each i is the same.
     randc: rand cycle. i that's already been chosen will only be chosen again if all possible i have been chosen
 
-    example:
+    //example:
 
     class packet_rand;
         rand bit [31:0] test1, test2;
@@ -133,3 +136,24 @@
         else   $fatal(0, "randomization failed"); //is constraint is test1>5, test1<6, then randomization failed
         //if failed, test1,2,3 all failed
     end
+
+    inside:
+    <variable> inside {<values or range>}
+    my_var inside {1,2,3} //check if my_var is either 1,2,3
+    my_var inside {[1,10]} //check if my)var is between 1 and 10
+
+    dist:
+    rand int src, dst;
+    constraint const_dist {
+        src dist {0:=40, [1:3]:=60};
+        //weight denominator is 40+3*60=220. so the change for src=0 is 40/220
+        dst dist {0:/40, [1:3]:/60};
+        //weight denominator is 100. so the change for src=0 is 2/5
+    }
+
+    $:
+    To determine maximum and minimum number
+    rand bit [6:0] a; //a is in the range of 0 and 127
+    constraint dollar_range{
+        a inside {[$:5], [10:$]}; // 0 <= a <= 5 || 10 <= a <= 127
+    }
