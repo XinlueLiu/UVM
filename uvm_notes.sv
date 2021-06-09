@@ -115,12 +115,13 @@
         package_name::ADD:result = 0;
     endcase 
     
-6.  randomization keywords 
+6. randomization keywords
 
     rand, randc, constraint{}:
     systemverilog can only randomize 2-value datatypes. e.g. bits. if rand logic, x and z will not be randomized
     rand:randomly choose within the constraint. possibility of getting each i is the same.
     randc: rand cycle. i that's already been chosen will only be chosen again if all possible i have been chosen
+    (used in class)
 
     //example:
 
@@ -136,6 +137,8 @@
         else   $fatal(0, "randomization failed"); //is constraint is test1>5, test1<6, then randomization failed
         //if failed, test1,2,3 all failed
     end
+
+    if randomize(test1) then only test1 get randomized, not including test2
 
     inside:
     <variable> inside {<values or range>}
@@ -157,3 +160,25 @@
     constraint dollar_range{
         a inside {[$:5], [10:$]}; // 0 <= a <= 5 || 10 <= a <= 127
     }
+
+    $random(): return 32-bit signed
+    $urandom(): return 32-bit unsigned
+    $urandom_range(): return a value in the range
+
+7. constraint_mode()
+    p.const1.constraint_mode(0); //shut down the specific constraint
+    p.constraint_mode(0); //shut down all constraint
+    p.const1.constraint_mode(1); //turn the specific const1 on
+
+   randomize() with //additional constraint when asserting the randomization
+   
+   soft keyword
+   //the constraint with soft has lower priority then other constraints
+
+   //remember to declare the size of a dynamic array
+   //can use sum(), foreach to constraint the dynamic array
+
+   //can user define pre_randomize() and post_randomize()
+
+   //can use randsequence() to weight the possibility of entering the tasks
+   //can use randcase to weight the possibility of entering the cases
