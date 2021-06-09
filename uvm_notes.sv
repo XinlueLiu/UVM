@@ -182,3 +182,19 @@
 
    //can use randsequence() to weight the possibility of entering the tasks
    //can use randcase to weight the possibility of entering the cases
+
+8. mailbox
+    //used to communicate between transactions
+    //mailbox behaves like queue, but mailbox cannot access a given index within the mailbox queue. 
+    //It can only be retrieved in FIFO order
+    syntax:
+    axi_txn txn = new();
+    mailbox mbx = new(); //create a unbounded mailbox
+    mailbox mbx2 = new(sizet); //create bounded mailbox with size sizet
+    mbx.put(txn); //put the messagein the mailbox
+    mbx.get(txn); //retrieve a message from a mailbox
+    mbx.num(); //get numbers of messages currently in the mailbox
+    mbx.try_put(txn); //can put if mailbox is not full and returns positive integer. else return 0
+    mbx.try_get(txn); //can get if mailbox is not empty. if empty returns 0
+    mbx.peek(txn); //copies one message from the mailbox without removing the messaage from the queue
+    mbx.try_peek(txn); //try to peek
