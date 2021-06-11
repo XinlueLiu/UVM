@@ -50,12 +50,12 @@
     join_any
     statement3; //statement3 will be executed after either one of statement1 and statemen2 finish running
 
-    fork
+    fork : disable_example
         statement1;
         statement2;
         statement3;
     join_any
-    disable fork;
+    disable disable_example; //can use tag or disable fork
     statement4; //statement4 will be executed after either one of above statements finish running, and kill the 
     //rest of it
 
@@ -65,7 +65,7 @@
         statement3;
     join_none
     statement4; //statement4 will be executed immediately
-    wait fork; //wo;; waot fpr statement1,2,3, but not 4
+    wait fork; //will wait for statement1,2,3, but not 4
     (2). nested between begin...end, the two statements will be executed sequentially, but the two begin..end 
     blocks will be executed in parallel
     fork
@@ -186,18 +186,46 @@
    //can use randsequence() to weight the possibility of entering the tasks
    //can use randcase to weight the possibility of entering the cases
 
-8. mailbox
-    //used to communicate between transactions
-    //mailbox behaves like queue, but mailbox cannot access a given index within the mailbox queue. 
-    //It can only be retrieved in FIFO order
-    syntax:
-    axi_txn txn = new();
-    mailbox #(axi_txn) mbx = new(); //create a unbounded mailbox with type axi_txn
-    mailbox mbx2 = new(sizet); //create bounded mailbox with size sizet
-    mbx.put(txn); //put the messagein the mailbox
-    mbx.get(txn); //retrieve a message from a mailbox
-    mbx.num(); //get numbers of messages currently in the mailbox
-    mbx.try_put(txn); //can put if mailbox is not full and returns positive integer. else return 0
-    mbx.try_get(txn); //can get if mailbox is not empty. if empty returns 0
-    mbx.peek(txn); //copies one message from the mailbox without removing the messaage from the queue
-    mbx.try_peek(txn); //try to peek
+8. interprocess Communication
+    (1).event //can use -> to trigger next event.
+               //event does not need new
+        example:
+        
+        event e1, e2;
+        initial begin
+            -> e1;
+            //if use @e2,which is edge triggered, then either e1 or e2 may not been triggered due to delta cycle
+            //triggered is level triggered, so it will wait until the event is triggered. if its already 
+            //been triggered, then its still good
+            wait (e2.triggered());
+        end
+        initial begin
+            -> e2;
+            wait (e1.triggered());
+        end
+
+    (2). semaphore //need to get the key to process
+        example:
+
+        semaphore sem; //create a semaphore
+        sem = new(1); //create a key
+        sem.get(1); //get a key
+        sem.put(1); //return a key   
+
+    (3). mailbox
+        //used to communicate between transactions
+        //mailbox behaves like queue, but mailbox cannot access a given index within the mailbox queue. 
+        //It can only be retrieved in FIFO order
+        syntax:
+        axi_txn txn = new();
+        mailbox #(axi_txn) mbx = new(); //create a unbounded mailbox with type axi_txn
+        mailbox mbx2 = new(sizet); //create bounded mailbox with size sizet
+        mbx.put(txn); //put the messagein the mailbox
+        mbx.get(txn); //retrieve a message from a mailbox
+        mbx.num(); //get numbers of messages currently in the mailbox
+        mbx.try_put(txn); //can put if mailbox is not full and returns positive integer. else return 0
+        mbx.try_get(txn); //can get if mailbox is not empty. if empty returns 0
+        mbx.peek(txn); //copies one message from the mailbox without removing the messaage from the queue
+        mbx.try_peek(txn); //try to peek
+
+    
