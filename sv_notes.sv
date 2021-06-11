@@ -228,4 +228,113 @@
         mbx.peek(txn); //copies one message from the mailbox without removing the messaage from the queue
         mbx.try_peek(txn); //try to peek
 
+9. coverage
+    1. coverage types
+        (1). code coverage
+            //coverage of design code
+            line coverage
+            path coverage
+            condition/branch coverage //if
+            Toggle coverage //bit value 1 or 0
+            FSM coverage
+        (2). assertion coverage
+            //A kind of Functional Coverage which measures which assertions have been triggered. 
+        (3). functional coverage
+            //Functional coverage is a measure of what functionalities/features of the design have been exercised by the tests. 
+    2. coverage group
+        //can include one or more coverpoint, which sample in specific times
+
+        example1: 
+        
+        class example;
+            example ex1;
+            covergroup cg_ex1
+                coverpoint ex1.test;
+                function new();
+                  cg_ex1 cg1 = new();
+                endfunction
+            endgroup: cg_ex1
+        endclass
+        
+        task main
+            forever begin
+                cg1.sample();
+            end
+        endtask 
+
+        example2:
+        event trans_ready;
+        //  Covergroup: cg_cg1
+        //
+        covergroup cg_cg1 @(trans_ready);
+            coverpoint ex1.test;
+        endgroup: cg_cg1
+
+    3. coverpoint bin 
+        //sv will create(or user define) many bins to record # of times each value get sampled
+        //user define bin
+        example: 
+        covergroup cg1;
+            options.auto_bin_max = 8;
+            coverpoint ex1.test {options.auto_bin_max = 2;} //auto_bin # = 2
+        endgroup
+
+        covergroup cg1;
+            options.auto_bin_max = 8;
+            coverpoint ex1.test {
+                bins zero = {0};
+                bins low = {[1:3],[5]};
+            } 
+        endgroup
+
+        //coverpoint can use iff to add conditions. can use .start() or .stop() to control the sampling
+
+        //coverpoint can also record the changing status of the values
+        covergroup cg1;
+            coverpoint ex1.test {
+                bins b1 = (0 => 1), (0 => 2), (0 => 3);
+            }
+        endgroup
+        
+        //can use wildcard to create multiple status
+        covergroup cg1;
+            coverpoint ex1.test {
+                wildcard bins even = {3'b??0};
+                wildcard bins odd = {3'b??1};
+            }
+        endgroup
+
+        ignore_bins and illegal_bins 
+        //can use ignore_bins to ignore certain vals
+        //can use illegal_bins. when enconters error will pop up
     
+        cross coverage
+        //can use cross keyword to sample multiple vals
+        binsof, intersect 
+        //can use binsof to choose specific bins
+        //can use intersect to specific specific element of bins
+
+        example:
+        //if we have 2 rand vals a and b, and we are interested in these three cases
+        //when {a ==0, b ==0}, {a == 1, b == 0}, and {b == 1}
+        class transactions
+            rand bit a,b;
+        endclass
+
+        covergroup crossBinExaple;
+            a : coverpoint tr.a{
+                bins a0 = {0};
+                bins a1 = {1};
+                option.weight = 0; //define the influence of a coverpoint to the total coverage number
+            }
+            b : coverpoint tr.b{
+                bins b0 = {0};
+                bins b1 = {1};
+                option.weight = 0; //define the influence of a coverpoint to the total coverage number
+            }
+            ab : cross a,b {
+                bins a0b0 = binsof(a.a0) && binsof(b.b0);
+                bins a1b0 = binsof(a.a1) && binsof(b.b0));
+                bins b1 = binsof(b.b1);
+            }
+        endgroup
