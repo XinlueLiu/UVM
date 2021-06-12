@@ -88,6 +88,7 @@
         in the child class. if virtual not declared, then only find it in the child class;
     (3). virtual methods/classes
         virtual methods are resolved according to the contents of a handle, not the type
+        better to declare virtual class on the superclass, and it only needs to be declared once
 
         virtual class cannot be instantiated, only to be inherited.
         virtual class may have pure virtual methods, which is a prototype only(no implementation). The subclass
@@ -338,3 +339,33 @@
                 bins b1 = binsof(b.b1);
             }
         endgroup
+
+10. type casting
+    $cast(tgt, src) and int'(1.0)
+
+11. copy
+    (1). shallow copy
+        p1 = new();
+        p2 = new p1;
+
+12. callback
+    //declare pre_callback and post_callback in superclass for subclass to use
+13. parametrize class
+    example: //user defined mailbox
+
+    class mailbox #(type T = int);
+         local T = queue[$]; //To specify a finite, but unbounded, number of iterations, the dollar sign ( $ ) is used
+         task put(input T i);
+            queue.push_back(i);
+         endtask
+
+         task get(ref T o);
+            wait(queue.size() > 0);
+            o = queue.pop_front();
+         endtask
+
+         task peek(ref T o);
+            wait (queue.size() > 0);
+            o = queue[0];
+         endtask
+    endclass //mailbox
