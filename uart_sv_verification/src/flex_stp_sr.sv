@@ -27,7 +27,7 @@ always_comb begin: NEXT_STATE_LOGIC
 			1'b1:
 				next_parallel_out = {parallel_out[NUM_BITS - 2: 0], serial_in};
 			1'b0:
-			next_parallel_out = {serial_in, parallel_out[NUM_BITS - 1:1]};
+				next_parallel_out = {serial_in, parallel_out[NUM_BITS - 1:1]};
 		endcase
 	end
 end

@@ -29,6 +29,7 @@ module tb_rcv_block();
   wire tb_data_ready;
   wire tb_overrun_error;
   wire tb_framing_error;
+  wire tb_parity_check;
   
   // Test bench debug signals
   // Overall test case number for reference
@@ -44,6 +45,7 @@ module tb_rcv_block();
   reg       tb_expected_framing_error;
   reg       tb_expected_data_ready;
   reg       tb_expected_overrun;
+  reg       tb_expected_parity;
 
   integer i;
   
@@ -57,7 +59,8 @@ module tb_rcv_block();
     .rx_data(tb_rx_data),
     .data_ready(tb_data_ready),
     .overrun_error(tb_overrun_error),
-    .framing_error(tb_framing_error)
+    .framing_error(tb_framing_error),
+    .even_parity_bit(tb_parity_check)
   );
   
   // Tasks for regulating the timing of input stimulus to the design
@@ -111,7 +114,10 @@ module tb_rcv_block();
     input assert_data_read;
   begin
     // Don't need to syncrhonize relative to clock edge for this design's outputs since they should have been stable for quite a while given the 2 Data Period gap between the end of the packet and when this should be used to check the outputs
-    
+    assert(tb_expected_parity == tb_parity_check)
+      $info("Test case %0d: parity bit correctly calculated", tb_test_num);
+    else
+      $error("Test case %0d: parity bit was not correctly calculated", tb_test_num);
     // Data recieved should match the data sent
     assert(tb_expected_rx_data == tb_rx_data)
       $info("Test case %0d: Test data correctly received", tb_test_num);
@@ -221,6 +227,7 @@ module tb_rcv_block();
     tb_expected_framing_error = 1'b0;
     // Not intentionally creating an overrun condition -> overrun should be 0
     tb_expected_overrun       = 1'b0;
+    tb_expected_parity        = 1'b0;
     
     // DUT Reset
     reset_dut;
@@ -249,6 +256,7 @@ module tb_rcv_block();
     tb_expected_framing_error = ~tb_test_stop_bit;
     // Not intentionally creating an overrun condition -> overrun should be 0
     tb_expected_overrun       = 1'b0;
+    tb_expected_parity        = 1'b0;
     
     // DUT Reset
     reset_dut;
@@ -270,7 +278,7 @@ module tb_rcv_block();
     tb_test_case = "Max Fast Data-Rate, Normal Packet";
     
     // Setup packet info for debugging/verificaton signals
-    tb_test_data       = 8'b01010101;
+    tb_test_data       = 8'b01010100;
     tb_test_stop_bit   = 1'b1;
     tb_test_bit_period = WORST_FAST_DATA_PERIOD;
     tb_test_data_read  = 1'b1;
@@ -284,6 +292,7 @@ module tb_rcv_block();
     tb_expected_framing_error = ~tb_test_stop_bit;
     // Not intentionally creating an overrun condition -> overrun should be 0
     tb_expected_overrun       = 1'b0;
+    tb_expected_parity        = 1'b1;
     
     // DUT Reset
     reset_dut;
@@ -302,7 +311,7 @@ module tb_rcv_block();
     //************************************************************************   
     // Test case 3: Normal packet, WORST_SLOW_DATA_PERIOD
     // Synchronize to falling edge of clock to prevent timing shifts from prior test case(s)
-    @(negedge tb_clk);
+    /*@(negedge tb_clk);
     tb_test_num += 1;
     tb_test_case = "Max Fast Data-Rate, Normal Packet";
     
@@ -414,7 +423,7 @@ module tb_rcv_block();
     tb_expected_data_ready    = tb_test_stop_bit;
     send_packet(tb_test_data, tb_test_stop_bit, tb_test_bit_period);
     #(tb_test_bit_period * 2);
-    check_outputs(tb_test_data_read);
+    check_outputs(tb_test_data_read);*/
  $finish();
 
 end

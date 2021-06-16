@@ -15,7 +15,8 @@ module rcv_block
 	output reg [7:0] rx_data,
 	output reg data_ready,
 	output reg overrun_error,
-	output reg framing_error
+	output reg framing_error,
+  output reg even_parity_bit
 );
 	wire start_bit_detected;
 	wire shift_enable;
@@ -86,7 +87,8 @@ rx_data_buff
   .data_read(data_read),
   .rx_data(rx_data),
   .data_ready(data_ready),
-  .overrun_error(overrun_error)
+  .overrun_error(overrun_error),
+  .even_parity_bit(even_parity_bit)
   );
 
 endmodule 

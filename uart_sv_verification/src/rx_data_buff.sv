@@ -17,8 +17,26 @@ module rx_data_buff
   input  wire data_read,
   output reg  [7:0] rx_data,
   output reg  data_ready,
-  output reg  overrun_error
+  output reg  overrun_error,
+  output reg  even_parity_bit
 );
+  reg bit_sum;
+  integer j;
+  always @(packet_data) begin
+    bit_sum = 0;
+    for (j = 0; j < 8; j++) begin
+      if (packet_data[j] == 1'b1) begin
+        bit_sum = bit_sum + 1;
+      end
+      if (j == 7) begin
+        if (bit_sum % 2) begin  //if 1, odd
+          even_parity_bit = 1'b1;
+        end else begin
+          even_parity_bit = 1'b0;
+        end
+      end
+    end
+  end
 
   reg [7:0] nxt_rx_data;
   reg nxt_overrun_error;
