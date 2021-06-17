@@ -65,6 +65,7 @@
     //example
     box b2, b1;
     b2.copy(b1); //we can directly use copy, compare, print, .etc
+    //when do_compare, make sure to cast the generic uvm_object to user defined object
 
 4. objection 
     //example
@@ -77,12 +78,27 @@
     endclass
     //at least 1 component raise objection, otherwise uvm will go to next phase
 
-5. config
+5. uvm_phases
+    function types:
+        1. build_phase: build testbench components and create their instances
+        2. connect_phase: connect between different testbench components via TLM ports
+        3. end_of_elaboration_phase: display UVM topology and other functions required to be done after connection
+        4. start_of_simulation_phase: Used to set initial run-time configuration or display topology
+    task type:
+        5. run_phase: Actual simulation that consumes time happens 
+        in this UVM phase and runs parallel to other UVM run-time phases.
+    function types:
+        6. extract_phase: extract and compute expected data from scoreboard
+        7. check_phase: perform scoreboard tasks that check for errors between expected and actual values from design
+        8. report_phase: display result from checkers, or summary of other test objectives
+        9.final_phase: do last minute operations before exiting the simulation
+        
+6. config
     //form
     uvm_config_db#(type)::set(contxt, inst_name, field_name, value);
     uvm_config_db#(type)::get(contxt, inst_name, field_name, value);
     
-6. uvm_report 
+7. uvm_report 
     function void uvm_report_info(string id, string message, int verbosity = UVM_MEDIUM);
     //also have uvm_report_warning, uvm_report_error, uvm_report_fatal
     //or we can use uvm macros to do so
@@ -91,3 +107,41 @@
     `uvm_warning(get_name(), "message")
     `uvm_error(get_name(), "message")
     `uvm_fatal(get_name(), "message")
+
+8. uvm_components 
+    (1). uvm_driver
+    //get transaction from uvm_sequencer, and drive the DUT(send the transaction)
+    //request type defaulted as uvm_sequence_item, response defaulted same as response
+    class uvm_driver # (type REQ=uvm_sequence_item, type RSP=REQ) extends uvm_component;
+    //in order for driver to get new transaction from sequencer, use pull
+    driver.seq_item_port.connect(sequencer.seq_item_export); //get the request
+    driver.rsp_port.connect(sequencer.rsp_export); //send the response
+
+    //example: how to user define a driver
+    class dut_driver extends uvm_driver #(basic_transaction) //type of sequence item, REQ
+        virtual chip_if vif; //virtual interface
+        `uvm_component_utils(dut_driver)
+        function new(string name, uvm_component parent);
+          super.new(name,parent);
+        endfunction:new
+        extern task run_phase(uvm_phase phase); //can define later
+    endclass: dut_driver
+
+    (2). uvm_monitor 
+    //to monitor interface data, internal data, .etc. no new methods comparing to uvm_component
+    //keep PASSIVE mode. never drive dut
+    class serial_monitor extends uvm_monitor;
+        virtual serial_if.monitor mi; //virtual interface + modport
+        `uvm_component_utils(serial_monitor)
+        function new(string name, uvm_component parent);
+            super.new(name, parent);
+        endfunction: new
+        function void build_phase(uvm_phase phase);
+          super.build_phase(phase);
+        endfunction: build_phase
+        extern task run_phase(uvm_phase phase);
+    endclass: serial_monitor
+        
+    //external definition
+    task serial_monitor::run_phase(uvm_phase);
+    endtask: run_phase
