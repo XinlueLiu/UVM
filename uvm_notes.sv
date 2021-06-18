@@ -180,3 +180,8 @@
     
     (6). uvm_test 
     //instantiate the environment
+
+    (7). overall structure
+    //uvm_top is the only instantiation of the uvm_root. uvm_top creates uvm_test(if parent = null, then its 
+    //parent is uvm_top, but its not recommend). uvm_test creates uvm_env, and uvm_env creates 
+    //scoreboard, agent, register model, .etc. It also controls phase, objections, .etc, 
