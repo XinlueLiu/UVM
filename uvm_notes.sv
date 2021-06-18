@@ -145,3 +145,38 @@
     //external definition
     task serial_monitor::run_phase(uvm_phase);
     endtask: run_phase
+
+    (3). uvm_sequencer 
+    //like a tube to transport transactions from sequence to driver
+
+    (4). uvm_agent
+    //like a standard verification environment, which include a driver, a monitor, and a sequener
+    //sometimes uvm agent only need 1 monitor, if its not active(UVM_PASSIVE)
+    uvm_active_passive_enum is_active = UVM_ACTIVE;
+    //master agent and slave agent
+
+    (5). uvm_scoreboard
+    //compare, report data, like a checker
+    //it will receive data from many monitors
+    uvm_in_order_comparator #(type T) //compare expected and output value when have the same time
+    uvm_altorithm_comparator #(type BEFORE, type AFTER, type TRANSFORMER) //transform BEFORE to AFTER using TRANSFORMER
+
+    (6). uvm_env 
+    //may include many uvm_agent and other components
+    //will be re-used in upper level design environment
+    //example
+    class top_env extends uvm_env;
+        sub_env m_se;
+        my_agent m_agt;
+        my_scoreboard m_sb;
+        `uvm_component_utils(top_env)
+        extern function new(string name, uvm_component parent);
+        function void build_phase(uvm_phase);
+            m_se = sub_env::type_id::create("m_se", this);
+            m_agt = my_agent::type_id::create("m_agt", this);
+            m_sb = my_scoreboard::type_id::create("my_sb", this);
+        endfunction
+    endclass: top_env
+    
+    (6). uvm_test 
+    //instantiate the environment
