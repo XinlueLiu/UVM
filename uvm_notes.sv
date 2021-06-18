@@ -184,4 +184,71 @@
     (7). overall structure
     //uvm_top is the only instantiation of the uvm_root. uvm_top creates uvm_test(if parent = null, then its 
     //parent is uvm_top, but its not recommend). uvm_test creates uvm_env, and uvm_env creates 
-    //scoreboard, agent, register model, .etc. It also controls phase, objections, .etc, 
+    //scoreboard, agent, register model, .etc. It also controls phase, objections, .etc. 
+
+9. (1). TLM(Transaction level modeling)
+    //initiator(sender) and target(responder). Always connect initiator to target
+    //producer and consumer, this is based on direction of transaction.  
+    //port types:
+    //port: start of initiator. initiator use port to access target
+    //export: port of in-between ports of initiator and target. is never the end
+    //imp: end point of target, cannot extend
+
+    //cannot use type_id::create, because its neither object nor component. 
+    //uvm_port_base inherit uvm_void
+    //can be unidirection or bidirection
+    (2). unidirectional communication
+    //have both blocking and non_blocking, such as get and try_get
+    //all this methods are implemented in the target, and initiator use this method from target
+    uvm_put_PORT //initiator to target
+    uvm_get_PORT //target to initiator
+    uvm_peek_PORT
+    uvm_get_peek_PORT 
+    (3). bidirectional communication
+    //still have initiator and target, but both sides are producer and consumer
+    (4). multi-directional communication
+    //still between two components, but multiple transactions between initiator and target
+    `uvm_blocking_put_imp_decl(_p1)
+    `uvm_blocking_put_imp_decl(_p2)
+    //if comp1 is initiator, comp2 is target
+    class comp1 extends uvm_component;
+        uvm_blocking_put_port #(itrans) bp_port1;
+        uvm_blocking_put_port #(itrans) bp_port2;
+        ...
+        task run_phase(uvm_phase phase);
+            itrans itr1, itr2;
+            this.bp_port1.put(itr1);
+            this.bp_port1.put(itr2); //do not need to specify p1 or p2
+        endtask
+    endclass
+    class comp2 extends uvm_component;
+        uvm_blocking_put_imp_p1 #(itrans, comp2) bt_imp_p1;
+        uvm_blocking_put_imp_p2 #(itrans, comp2) bt_imp_p2;
+        semaphore key;
+        ...
+        task put_p1(itrans t);
+            key.get();
+            key.put();
+        endtask
+        task put_p2(itrans t);
+            key.get();
+            key.put();
+        endtask
+    endclass
+    class env1 extends uvm_env;
+        comp1 c1;
+        comp2 c2;
+        `uvm_component_utils(env1)
+        ...
+        function void build_phase(uvm_phase phase);
+            super.build_phase(phase);
+            c1 = comp1::type_id::create("c1", this);
+            c2 = comp2::type_id::create("c2", this);
+        endfunction: build_phase
+        function void connect_phase(uvm_phase phase);
+            super.connect_phase(phase);
+            c1.bp_port1.connect(c2.bt_imp_p1);
+            c1.bp_port2.connect(c2.bt_imp_p2);
+        endfunction:connect_phase
+    endclass
+        
