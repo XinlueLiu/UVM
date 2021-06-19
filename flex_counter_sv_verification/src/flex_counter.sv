@@ -1,60 +1,48 @@
-// $Id: $
-// File name:   flex_counter.sv
 // Created:     9/16/2019
-// Author:      Xinlue LIu
-// Lab Section: 337-02
-// Version:     1.0  Initial Design Entry
-// Description: Flexible Counter Design
+// Modified:    6/18/2021
+
+`include "flex_counter_if.svh"
+`include "parameter_def.v"
 
 module flex_counter
-#(
-  parameter NUM_CNT_BITS = 4
-)
 (
-	input wire clk,
-	input wire n_rst,
-	input wire clear,
-	input wire count_enable,
-	input wire [NUM_CNT_BITS - 1:0] rollover_val,
-	output reg [NUM_CNT_BITS - 1:0] count_out,
-	output reg rollover_flag
+	input logic CLK, nRST, 
+	flex_counter_if.flex_counter fcif
 );
 
-	reg[NUM_CNT_BITS - 1:0] next_countout;
-	reg nextRollover;
+	logic	[`NUM_CNT_BITS - 1:0] next_countout;
+	logic   next_rollover;
 
 always_comb begin : NEXT_STATE_LOGIC
-	nextRollover = 0;
-	next_countout = count_out;
-	if (clear) begin
+	next_rollover = 0;
+	next_countout = fcif.count_out;
+	if (fcif.clear) begin
 		next_countout = 0;
-		nextRollover = 0;
-	end else if (count_enable) begin
-		if (count_out == rollover_val - 1) begin
-			nextRollover = 1;
-			next_countout = count_out + 1;
-		end else if (count_out == rollover_val) begin
+		next_rollover = 0;
+	end 
+	
+	if (fcif.count_enable) begin
+		if (fcif.count_out == fcif.rollover_val - 1) begin
+			next_rollover = 1;
+			next_countout = fcif.count_out + 1;
+		end else if (fcif.count_out == fcif.rollover_val) begin
 			next_countout = 1;
-			nextRollover = 0;
+			next_rollover = 0;
 		end else begin
-			next_countout = count_out + 1;
-			nextRollover = 0;
+			next_countout = fcif.count_out + 1;
+			next_rollover = 0;
 		end
 	end
 end
 
-always_ff @ (negedge n_rst, posedge clk) begin
-	if (!n_rst)
-		count_out <= 0;
-	else
-		count_out <= next_countout;
+always_ff @( posedge CLK, negedge nRST ) begin : COUNT_FLAG_TIM
+	if (!nRST) begin
+		fcif.count_out <= '0;
+		fcif.rollover_flag <= '0;
+	end else begin
+		fcif.count_out <= next_countout;
+		fcif.rollover_flag <= next_rollover;
 	end
-
-always_ff @ (negedge n_rst, posedge clk) begin
-	if (!n_rst)
-		rollover_flag <= 0;
-	else
-		rollover_flag <= nextRollover;
-	end
+end
 
 endmodule 
