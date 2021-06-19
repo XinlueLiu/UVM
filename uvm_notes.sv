@@ -251,4 +251,38 @@
             c1.bp_port2.connect(c2.bt_imp_p2);
         endfunction:connect_phase
     endclass
-        
+    (5). 
+    1. TLM_FIFO
+    //similar to mailbox
+    2. uvm_analysis_port 
+    //1 port to multiple ports(1 initiator to multiple targets). observer pattern
+    //use write() function
+    3. Analysis TLM_FIFO 
+    uvm_tlm_analysis_fifo 
+    4. Request & Response 
+    //bidirectional transport, that can send request and receive response
+
+10. synchronization in uvm
+    (1). uvm_event //can share a uvm_event_pool
+    //use trigger() to trigger the event and use wait_trigger() to wait
+    //if need to wait again, use reset() then trigger()
+    //can use trigger(T data), and wait_trigger_data(output T data)
+    //can use add_callback(uvm_event_callback cb, bit append=1) to add callback function
+    //can use get_num_waiters() to get number of transactions waiting
+
+    //use uvm_event_pool::get_global("e1") to get the uvm_event object
+    //can define pre_trigger() and post_trigger(). if pre_trigger() return 1, then uvm_event will not be triggered
+    //and post_trigger() will not be triggered. 
+
+    //can use wait_ptrigger() and wait_ptrigger_data(). level triggered
+    //wait_trigger is edge triggered
+
+    //normal data communication use TLM, such as sequencer and driver, monitor and scoreboard
+    //data communication between object and component, object and object, sequence and sequencer,
+    //sequence and driver can use uvm_event
+    (2). uvm_barrier
+    //can set certain threshold. when there are at least k processes, the event will be triggered.
+    //multiple barriers share 1 global uvm_barrier_pool
+    //use uvm_barrier::set_Threshold() and uvm_barrier::wait_for()
+    (3). uvm_callback
+    //1. define callback. 2. register callback. 3. insert callback 4. add callback
