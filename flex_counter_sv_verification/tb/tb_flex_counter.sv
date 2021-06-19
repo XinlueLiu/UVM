@@ -11,6 +11,8 @@
 
 `timescale 1ns / 10ps
 
+`include "flex_counter_if.svh"
+
 module tb_flex_counter();
 
   // Define local parameters used by the test bench
@@ -22,19 +24,11 @@ module tb_flex_counter();
   
   localparam  INACTIVE_VALUE     = 0;
   localparam  RESET_OUTPUT_VALUE = INACTIVE_VALUE;
-  integer i;
   
   // Declare DUT portmap signals
   reg tb_clk;
-  reg tb_n_rst; 
-  logic tb_clear;
-  logic tb_count_enable;
-  logic [NUM_CNT_BITS - 1:0] tb_rollover_val;
-  reg [NUM_CNT_BITS - 1:0] tb_count_out;
-  reg tb_rollover_flag;
-  
-  //reg tb_async_in;
-  //wire tb_sync_out;
+  reg tb_n_rst;
+  integer i = 0;
   
   // Declare test bench signals
   integer tb_test_num;
@@ -46,7 +40,7 @@ module tb_flex_counter();
   task clear_task;
   begin
   @(posedge tb_clk);
-  tb_clear = 1'b1;
+  fcif.clear = 1'b1;
   @(posedge tb_clk);
   #(CLK_PERIOD);
   end
@@ -82,17 +76,17 @@ module tb_flex_counter();
     input string check_tag;
   begin
     @(negedge tb_clk);
-    if(expected_value_count == tb_count_out[NUM_CNT_BITS - 1:0]) begin // Check passed
-      $info("Correct tb_count_out output %s during %s test case", check_tag, tb_test_case);
+    if(expected_value_count == fcif.count_out) begin // Check passed
+      $info("Correct fcif.count_out output %s during %s test case", check_tag, tb_test_case);
     end
     else begin // Check failed-3 for not having explanation for 
-      $error("Incorrect tb_count_out output %s during %s test case, %d, %d", check_tag, tb_test_case,expected_value_count,tb_count_out);
+      $error("Incorrect fcif.count_out output %s during %s test case, %d, %d", check_tag, tb_test_case,expected_value_count,fcif.count_out);
     end
-    if(expected_value_flag == tb_rollover_flag) begin // Check passed
-      $info("Correct tb_rollover_flag output %s during %s test case", check_tag, tb_test_case);
+    if(expected_value_flag == fcif.rollover_flag) begin // Check passed
+      $info("Correct fcif.rollover_flag output %s during %s test case", check_tag, tb_test_case);
     end
     else begin // Check failed-3 for not having explanation for 
-      $error("Incorrect tb_rollover_flag output %s during %s test case, %d, %d", check_tag, tb_test_case,expected_value_count,expected_value_flag);
+      $error("Incorrect fcif.rollover_flag output %s during %s test case, %d, %d", check_tag, tb_test_case,expected_value_count,expected_value_flag);
     end
   end
   endtask
@@ -102,17 +96,17 @@ module tb_flex_counter();
     input string check_tag;
   begin
     // Only need to check that it's not a metastable value  decays are random
-    if(('b1 == tb_count_out[NUM_CNT_BITS - 1:0]) || ('b0 == tb_count_out[NUM_CNT_BITS - 1:0])) begin // Check passed
-      $info("Correct tb_count_out output %s during %s test case", check_tag, tb_test_case);
+    if(('b1 == fcif.count_out) || ('b0 == fcif.count_out)) begin // Check passed
+      $info("Correct fcif.count_out output %s during %s test case", check_tag, tb_test_case);
     end
     else begin // Check failed
-      $error("Incorrect tb_count_out output %s during %s test case", check_tag, tb_test_case);
+      $error("Incorrect fcif.count_out output %s during %s test case", check_tag, tb_test_case);
     end
-    if(('b1 == tb_rollover_flag) || ('b0 == tb_rollover_flag)) begin // Check passed
-      $info("Correct expected_value_flag output %s during %s test case", check_tag, tb_test_case);
+    if(('b1 == fcif.rollover_flag) || ('b0 == fcif.rollover_flag)) begin // Check passed
+      $info("Correct fcif.rollover_flag output %s during %s test case", check_tag, tb_test_case);
     end
     else begin // Check failed
-      $error("Incorrect expected_value_flag output %s during %s test case", check_tag, tb_test_case);
+      $error("Incorrect fcif.rollover_flag output %s during %s test case", check_tag, tb_test_case);
     end
   end
   endtask
@@ -130,18 +124,19 @@ module tb_flex_counter();
   end
   
   // DUT Port map
+  //interface
+  flex_counter_if fcif ();
   //sync_high DUT(.clk(tb_clk), .n_rst(tb_n_rst), .async_in(tb_async_in), .sync_out(tb_sync_out));
-  flex_counter DUT(.CLK(tb_clk), .nRST(tb_n_rst), .clear(tb_clear), .count_enable(tb_count_enable), 
-		.rollover_val(tb_rollover_val), .count_out(tb_count_out), .rollover_flag(tb_rollover_flag));
+  flex_counter DUT(.CLK(tb_clk), .nRST(tb_n_rst), .fcif(fcif));
 
   // Test bench main process
   initial
   begin
     // Initialize all of the test inputs
     tb_n_rst  = 1'b1;              // Initialize to be inactive
-    tb_clear = 1'b0;
-    tb_count_enable = 1'b0;
-    tb_rollover_val = 2;
+    fcif.clear = 1'b0;
+    fcif.count_enable = 1'b0;
+    fcif.rollover_val = 2;
     //tb_async_in  = INACTIVE_VALUE; // Initialize input to inactive  value
     tb_test_num = 0;               // Initialize test case counter
     tb_test_case = "Test bench initializaton";
@@ -162,10 +157,10 @@ module tb_flex_counter();
     #(0.1);
     // Apply test case initial stimulus
     //tb_async_in  = INACTIVE_VALUE; // Set to be the the non-reset value //1'b1
-    tb_clear = 1'b0;
-    tb_count_enable = 1'b0;
+    fcif.clear = 1'b0;
+    fcif.count_enable = 1'b0;
     tb_n_rst  = 1'b0;    // Activate reset
-    tb_rollover_val = 2;
+    fcif.rollover_val = 2;
     
     // Wait for a bit before checking for correct functionality
     #(CLK_PERIOD * 0.4);
@@ -183,7 +178,7 @@ module tb_flex_counter();
     @(posedge tb_clk);
     #(FF_HOLD_TIME);
     tb_n_rst  = 1'b1;   // Deactivate the chip reset
-    //tb_count_enable = 1'b1;
+    //fcif.count_enable = 1'b1;
     #0.5;
     // Check that internal state was correctly keep after reset release
     check_output( RESET_OUTPUT_VALUE, RESET_OUTPUT_VALUE,
@@ -199,16 +194,16 @@ module tb_flex_counter();
     // Start out with inactive value and reset the DUT to isolate from prior tests
     //tb_async_in = INACTIVE_VALUE;
 
-    tb_clear = 1'b0;
-    tb_count_enable = 1'b0;
+    fcif.clear = 1'b0;
+    fcif.count_enable = 1'b0;
     tb_n_rst  = 1'b0;    // Activate reset
-    tb_rollover_val = 3;
+    fcif.rollover_val = 3;
     reset_dut();
 
     // Assign test case stimulus 
     @(posedge tb_clk);
     tb_n_rst = 1'b1;
-    tb_count_enable = 1'b1;
+    fcif.count_enable = 1'b1;
     #(3 * CLK_PERIOD);
     #(0.2);
     //#(FF_HOLD_TIME);
@@ -228,19 +223,18 @@ module tb_flex_counter();
     tb_test_num = tb_test_num + 1;
     tb_test_case = "Continuous counting";
     // Start out with inactive value and reset the DUT to isolate from prior tests
-    tb_clear = 1'b0;
-    tb_count_enable = 1'b0;
+    fcif.clear = 1'b0;
+    fcif.count_enable = 1'b0;
     tb_n_rst  = 1'b0;    // Activate reset
-    tb_rollover_val = 2;
+    fcif.rollover_val = 2;
     reset_dut();
-    //logic i;
  
     tb_n_rst = 1'b1;
-    tb_count_enable = 1'b1;
-	@(posedge tb_clk);
+    fcif.count_enable = 1'b1;
+	  @(posedge tb_clk);
     	for(i = 0; i < 15; i++) begin
 		#(0.1);
-		check_output(i % tb_rollover_val + 1, (i % tb_rollover_val + 1)/ tb_rollover_val,"Continuous counting");
+		check_output(i % fcif.rollover_val + 1, (i % fcif.rollover_val + 1)/ fcif.rollover_val,"Continuous counting");
 		@(posedge tb_clk);
     	end
     
@@ -251,43 +245,23 @@ module tb_flex_counter();
     tb_test_num = tb_test_num + 1;
     tb_test_case = "iscontinuous Counting";
     // Start out with inactive value and reset the DUT to isolate from prior tests
-    tb_clear = 1'b0;
-    tb_count_enable = 1'b0;
+    fcif.clear = 1'b0;
+    fcif.count_enable = 1'b0;
     tb_n_rst  = 1'b0;    // Activate reset
-    tb_rollover_val = 10;
+    fcif.rollover_val = 10;
     reset_dut();
     //logic i;
  
     tb_n_rst = 1'b1;
-    tb_count_enable = 1'b1;
+    fcif.count_enable = 1'b1;
 
 	for(i = 0; i < 15; i++) begin
 		@(posedge tb_clk);
 		#(0.1);
-    		check_output((i/2 % tb_rollover_val +1), ((i % tb_rollover_val + 1)/ tb_rollover_val)/2,"Continuous counting");
+    		check_output((i/2 % fcif.rollover_val +1), ((i % fcif.rollover_val + 1)/ fcif.rollover_val)/2,"Continuous counting");
 		
-		tb_count_enable = !tb_count_enable;
-	end
-    // ************************************************************************
-    // Last Test Case: Clearing while counting to check clear vs. count enable priorit
-    // ************************************************************************
-    @(negedge tb_clk); 
-    tb_test_num = tb_test_num + 1;
-    tb_test_case = "iscontinuous Counting";
-    // Start out with inactive value and reset the DUT to isolate from prior tests
-    tb_clear = 1'b0;
-    tb_count_enable = 1'b0;
-    tb_n_rst  = 1'b0;    // Activate reset
-    tb_rollover_val = 10;
-    reset_dut();
-    //logic i;
- 
-    tb_n_rst = 1'b1;
-    tb_count_enable = 1'b1;
-    @(posedge tb_clk);
-    #(3*CLK_PERIOD);
-    clear_task();
-    check_output(0,0,
-                  "Clear task");
+		fcif.count_enable = !fcif.count_enable;
+  end
+    $finish();
   end
 endmodule 
