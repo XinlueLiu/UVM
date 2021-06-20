@@ -288,40 +288,46 @@
     //1. define callback. 2. register callback. 3. insert callback 4. add callback
 
 11. sequence, sequence item, sequencer, driver
-//sequence produces items(data to send), send to sequencer which acts like a arbitor, and then get to driver which
-//sends data to driver which manipulates the data
-(1). reationship betweeen uvm_sequence_item and uvm_sequence
-//item is based on uvm_object, which includes the specific data to send
-//use rand to randomize, and automation to clone, .etc
-//sequence can randomize items
+    //sequence produces items(data to send), send to sequencer which acts like a arbitor, and then get to driver which
+    //sends data to driver which manipulates the data
+    (1). reationship betweeen uvm_sequence_item and uvm_sequence
+    //item is based on uvm_object, which includes the specific data to send
+    //use rand to randomize, and automation to clone, .etc
+    //sequence can randomize items
 
-//uvm_sequence 
-//has body();
-//flat sequence
-//organize sequence_items
+    //uvm_sequence 
+    //has body();
+    //flat sequence
+    //organize sequence_items
 
-//hierarchical sequence
-//organize multiple sequence to attach to 1 sequencer
+    //hierarchical sequence
+    //organize multiple sequence to attach to 1 sequencer
 
-//virtual sequence
-//do not attach to 1 specific sequencer
-//organize multiple sequence to connect to different sequencer
-(2). relationship between uvm_sequencer and driver 
-//both are components, and use TLM communication.
-//driver is the initiator that gets itsm from sequencer
-//mostly used get_next_item and item_done
+    //virtual sequence
+    //do not attach to 1 specific sequencer
+    //organize multiple sequence to connect to different sequencer
+    (2). relationship between uvm_sequencer and driver 
+    //both are components, and use TLM communication.
+    //driver is the initiator that gets itsm from sequencer
+    //mostly used get_next_item and item_done
 
-//flat_se::body()
-    //-create request item via create_item()
-    //-send item via start_item
-    //-randomize item before sending
-    //-finish_item()
-    //-get response item from driver if necessary
+    //flat_se::body()
+        //-create request item via create_item() 
+        //-send item via start_item
+        //-randomize item before sending
+        //-finish_item()
+        //-get response item from driver if necessary
 
-//driver::run_phase()
-    //get valid request item via seq_item_port.get_next_item(REQ)
-    //get data from request item and produce stimulus
-    //if want to response, clone request item and send it back to sequence
-(3). sequencer and sequence
-    //can use macros to finish attach and send
-    //`uvm_do(item) and `uvm_do(seq)
+    //driver::run_phase()
+        //get valid request item via seq_item_port.get_next_item(REQ)
+        //get data from request item and produce stimulus
+        //if want to response, clone request item and send it back to sequence
+    (3). sequencer and sequence
+        // can use macros to finish attach and send
+        // `uvm_do(item) and `uvm_do(seq)
+        // can set priority for multiple sequences
+        //can use lock() and unlock(), grab() and ungrab()
+
+        //virtual sequence and virtual sequencer
+        //layering sequence
+        //transform layering sequence to physical sequence via adapter sequence
