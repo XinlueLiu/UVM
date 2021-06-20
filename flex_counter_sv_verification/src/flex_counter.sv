@@ -2,7 +2,7 @@
 // Modified:    6/18/2021
 
 `include "flex_counter_if.svh"
-`include "parameter_def.v"
+`include "parameter_def.sv"
 
 module flex_counter
 (
