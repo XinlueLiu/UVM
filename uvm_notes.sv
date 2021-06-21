@@ -331,3 +331,36 @@
         //virtual sequence and virtual sequencer
         //layering sequence
         //transform layering sequence to physical sequence via adapter sequence
+
+12. assertion
+    (1). immediate assertion
+
+    assert (condition) 
+    else   error_process //can conbine $fatal, $warning, $info
+
+    (2). concurrent assertion
+    //edge triggered
+    assert property (cont_prop(rst, in1, in2)) pass_stat else fail_stat;
+
+    example: 
+    property req_grant_prop
+        @(posedge clk) req ## 2 gnt ##1 !req ## !gnt;
+    endproperty
+
+    assert property req_grant_prop else $error("error");
+
+    example:
+    sequence s1;
+        @(posedge clk) a ##1 b ##1 c;
+    endsequence
+
+    sequence s2;
+        @(posedge clk) a ##1 c;
+    endsequence 
+
+    property p1;
+        @(posedge clk) disable iff (!reset)
+        s1 |=> s2;
+    endproperty
+
+    (3). sequence 
