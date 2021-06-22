@@ -40,9 +40,14 @@ module tb_flex_counter;
     );
 
     initial begin
-        //set the interface
-        uvm_config_db#(virtual flex_counter_if)::set(null, "", "vif", fcif);
-        //initiate the tes t
+        //pass the interface down to the components
+        //static set. type of value, prefix, path, field name, and value. 
+        //prefix+path will get the hierarchy path
+        if (!uvm_config_db#(virtual flex_counter_if)::set(null, "uvm_test_top.*", "fcif", fcif)) begin
+            `uvm_fatal("uvm_tb", "set interface failed at uvm_top")       
+        end
+       
+        //create an instance of the fc_test class and execute the specific test
         run_test("fc_test");      
     end
 
