@@ -1,1 +1,0 @@
-`define NUM_CNT_BITS 4
