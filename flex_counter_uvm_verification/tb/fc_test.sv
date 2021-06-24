@@ -29,9 +29,7 @@ class fc_test extends uvm_test;
         end
 
         //pass the virtual interface so any element looking for the virtual interface will get it
-        if (!uvm_config_db#(virtual flex_counter_if)::set(this, "*", "fcif", fcif)) begin
-            `uvm_fatal("uvm_test_down", "failed to pass interface down to other components")
-        end
+        uvm_config_db#(virtual flex_counter_if)::set(this, "*", "fcif", fcif);
         
     endfunction: build_phase
     
@@ -39,7 +37,7 @@ class fc_test extends uvm_test;
         phase.raise_objection(this, "raise objection for test");
         //the test will start the sequence. the argument is the sequencer we're gonna start
         //no parent argument since this is top level
-        seq.start(env.fc_agt.sqr);
+        seq.start(env.fc_agt.fc_sqr);
         phase.drop_objection(this, "drop objection for test");
     endtask :run_phase
     

@@ -3,7 +3,7 @@ import uvm_pkg::*;
 `include "flex_counter_if.svh"
 `include "fc_transaction.sv"
 
-class fc_driver extends uvm_driver #(fc_transaction)
+class fc_driver extends uvm_driver #(fc_transaction);
     `uvm_component_utils(fc_driver)
 
     virtual flex_counter_if fcif;

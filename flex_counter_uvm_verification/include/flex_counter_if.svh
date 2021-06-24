@@ -1,4 +1,9 @@
+`ifndef FLEX_COUNTER_IF
+`define FLEX_COUNTER_IF
+
 `include "parameter_def.sv"
+
+`timescale 1ns/1ps
 
 interface flex_counter_if(input bit CLK);
     //input to flex_counter
@@ -24,3 +29,5 @@ interface flex_counter_if(input bit CLK);
     output count_out, rollover_flag
     );
 endinterface //flex_counter_if
+
+`endif

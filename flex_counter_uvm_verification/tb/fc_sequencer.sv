@@ -11,7 +11,7 @@ class fc_sequence extends uvm_sequence #(fc_transaction);
     endfunction: new
 
     task body();
-        fc_sequence fc_item;
+        fc_transaction fc_item;
         fc_item = fc_transaction::type_id::create("fc_item");
         start_item(fc_item);
         if (!fc_item.randomize()) begin
@@ -20,12 +20,12 @@ class fc_sequence extends uvm_sequence #(fc_transaction);
         finish_item(fc_item);
     endtask : body
     
-endclass: fc_sequencer
+endclass: fc_sequence
 
 class fc_sequencer extends uvm_sequencer #(fc_transaction);
     `uvm_component_utils(fc_sequencer)
 
-    function new (input string name = "fc_sequencer", uvm_component parent)
+    function new (input string name = "fc_sequencer", uvm_component parent);
         super.new(name, parent);
     endfunction : new
     

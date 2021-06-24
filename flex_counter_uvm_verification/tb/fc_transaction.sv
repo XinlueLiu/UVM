@@ -1,3 +1,6 @@
+`ifndef FC_TRANSACTION
+`define FC_TRANSACTION
+
 import uvm_pkg::*;
 `include "uvm_macros.svh"
 `include "parameter_def.sv"
@@ -43,3 +46,5 @@ class fc_transaction extends uvm_sequence_item;
     endfunction
     
 endclass: fc_transaction
+
+`endif

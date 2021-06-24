@@ -1,17 +1,17 @@
+
+import uvm_pkg::*;
+`include "uvm_macros.svh"
 //flex_counter design files
 `include "flex_counter.sv"
 //parameter files
 `include "parameter_def.sv"
 //interface file
 `include "flex_counter_if.svh"
-
-`include "uvm_macros.svh"
 `include "fc_test.sv"
 
 `timescale 1ns/1ps
 
 module tb_flex_counter;
-    import uvm_pkg::*;
     logic CLK, nRST;
 
     //clock generation
@@ -43,9 +43,10 @@ module tb_flex_counter;
         //pass the interface down to the components
         //static set. type of value, prefix, path, field name, and value. 
         //prefix+path will get the hierarchy path
-        if (!uvm_config_db#(virtual flex_counter_if)::set(null, "uvm_test_top.*", "fcif", fcif)) begin
+        uvm_config_db#(virtual flex_counter_if)::set(null, "uvm_test_top.*", "fcif", fcif);
+        //if (!uvm_config_db#(virtual flex_counter_if)::set(null, "uvm_test_top.*", "fcif", fcif)) begin
             `uvm_fatal("uvm_tb", "set interface failed at uvm_top")       
-        end
+        //end
        
         //create an instance of the fc_test class and execute the specific test
         run_test("fc_test");      

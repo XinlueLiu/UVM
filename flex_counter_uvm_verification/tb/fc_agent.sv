@@ -27,16 +27,9 @@ class fc_agent extends uvm_agent;
         if (!uvm_config_db#(virtual flex_counter_if)::get(this, "", "fcif", fcif)) begin
             `uvm_fatal("uvm_agt", "failed to get interface from uvm_env")
         end
-
-        if (!uvm_config_db#(virtual flex_counter_if)::set(this, "fc_sqr", "fcif", fcif)) begin
-            `uvm_fatal("uvm_agt_down", "failed to pass interface down to the sequencer")
-        end
-        if (!uvm_config_db#(virtual flex_counter_if)::set(this, "fc_drv", "fcif", fcif)) begin
-            `uvm_fatal("uvm_agt_down", "failed to pass interface down to the driver")
-        end
-        if (!uvm_config_db#(virtual flex_counter_if)::set(this, "fc_mon", "fcif", fcif)) begin
-            `uvm_fatal("uvm_agt_down", "failed to pass interface down to the monitor")
-        end
+        uvm_config_db#(virtual flex_counter_if)::set(this, "fc_sqr", "fcif", fcif);
+        uvm_config_db#(virtual flex_counter_if)::set(this, "fc_drv", "fcif", fcif);
+        uvm_config_db#(virtual flex_counter_if)::set(this, "fc_mon", "fcif", fcif);
     endfunction: build_phase
 
     function void connect_phase(uvm_phase phase);

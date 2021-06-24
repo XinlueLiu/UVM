@@ -1,12 +1,14 @@
 import uvm_pkg::*;
 `include "uvm_macros.svh"
 `include "fc_transaction.sv"
+`include "flex_counter_if.svh"
 
 class fc_monitor extends uvm_monitor;
     `uvm_component_utils(fc_monitor)
 
     uvm_analysis_port #(fc_transaction) mon_ap;
     uvm_analysis_port #(fc_transaction) mon_result_ap;
+    virtual flex_counter_if fcif;
 
     function new(string name = "fc_monitor", uvm_component parent);
         super.new(name, parent);
@@ -40,3 +42,5 @@ class fc_monitor extends uvm_monitor;
             mon_result_ap.write(fc_tx);
         end
     endtask : run_phase
+
+endclass : fc_monitor

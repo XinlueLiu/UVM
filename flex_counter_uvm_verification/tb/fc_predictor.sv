@@ -15,10 +15,10 @@ class fc_predictor extends uvm_subscriber #(fc_transaction);
         fc_pred_ap = new("fc_pred_ap", this);
     endfunction
 
-    function void write(fc_transaction fc_tx);
+    function void write(fc_transaction t);
         fc_transaction fc_tx_output;
         fc_tx_output = fc_transaction::type_id::create("fc_tx_output", this);
-        fc_tx_output.copy(fc_tx);
+        fc_tx_output.copy(t);
         fc_tx_output.count_out = 1'b1; //to be changed
         fc_tx_output.rollover_flag = 1'b0;
         fc_pred_ap.write(fc_tx_output);

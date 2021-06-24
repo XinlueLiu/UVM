@@ -27,10 +27,7 @@ class fc_env extends uvm_env;
         if (!uvm_config_db#(virtual flex_counter_if)::get(this, "", "fcif", fcif)) begin
           `uvm_fatal("uvm_env", "failed to get interface from uvm_test")
         end
-
-        if (!uvm_config_db#(virtual flex_counter_if)::set(this, "fc_agt", "fcif", fcif)) begin
-            `uvm_fatal("uvm_env_down", "failed to pass interface down to the agent")
-        end
+        uvm_config_db#(virtual flex_counter_if)::set(this, "fc_agt", "fcif", fcif);
     endfunction
 
     function void connect_phase(uvm_phase phase);
@@ -41,9 +38,9 @@ class fc_env extends uvm_env;
       //connnect the analysis port of monitor to the analysis export of the predictor(subscriber)
       fc_agt.fc_mon.mon_ap.connect(fc_pred.analysis_export);
       //connect the analysis port of the predictor to the expected port of the comparator
-      fc_pred.fc_pred_ap.connect(fc_comp.expected_port);
+      fc_pred.fc_pred_ap.connect(fc_comp.expected_export);
       //connect the analysis port of the monitor to the actual export of the comparator
-      fc_agt.fc_mon.mon_result_ap.connect(fc_comp.actual_export)
+      fc_agt.fc_mon.mon_result_ap.connect(fc_comp.actual_export);
     endfunction
         
 
