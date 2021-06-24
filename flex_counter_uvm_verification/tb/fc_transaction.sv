@@ -19,7 +19,7 @@ class fc_transaction extends uvm_sequence_item;
     logic rollover_flag;
 
     constraint clear_count_enable {clear == 0 && count_enable == 1;}
-    constraint rollover_val_set {rollover_val == 2;}
+    constraint rollover_val_set {rollover_val == 10;}
 
     function new(string name = "fc_transaction");
         super.new(name);

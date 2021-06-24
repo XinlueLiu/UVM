@@ -14,19 +14,19 @@ interface flex_counter_if(input bit CLK);
     logic rollover_flag;
 
     clocking driver_ck @(posedge CLK);
-        default input #1ns output #1ns;
+        default input #1 output #1;
         input count_out, rollover_flag;
         output clear, count_enable, rollover_val;
     endclocking: driver_ck
 
     clocking monitor_ck @(posedge CLK);
-        default input #1ns output #1ns;
+        default input #1 output #1;
         input clear, count_enable, rollover_val, count_out, rollover_flag;
     endclocking: monitor_ck
 
     modport flex_counter (
-    input clear,count_enable,rollover_val,
-    output count_out, rollover_flag
+        input clear,count_enable,rollover_val,
+        output count_out, rollover_flag
     );
 endinterface //flex_counter_if
 

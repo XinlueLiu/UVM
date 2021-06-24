@@ -26,7 +26,9 @@ class fc_driver extends uvm_driver #(fc_transaction);
             fcif.clear = fc_tx.clear;
             fcif.count_enable = fc_tx.count_enable;
             fcif.rollover_val = fc_tx.rollover_val;
-            @(posedge fcif.driver_ck);
+            repeat(6) begin
+                @(posedge fcif.driver_ck);
+            end
             seq_item_port.item_done(); //transaction complete
         end
     endtask : run_phase
