@@ -41,6 +41,8 @@ class fc_comparator extends uvm_scoreboard;
           end else begin
             num_mismatches++;
             uvm_report_error("fc_comparator", "data mismatch");
+            actual_tx.print();
+            expected_tx.print();
           end
         end
       endtask

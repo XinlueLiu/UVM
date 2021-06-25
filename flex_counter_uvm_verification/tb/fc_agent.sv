@@ -24,12 +24,12 @@ class fc_agent extends uvm_agent;
         fc_mon = fc_monitor::type_id::create("fc_mon", this);
 
         //get the interface and pass the interface down
-        if (!uvm_config_db#(virtual flex_counter_if)::get(this, "", "fcif", fcif)) begin
+        /*if (!uvm_config_db#(virtual flex_counter_if)::get(this, "", "fcif", fcif)) begin
             `uvm_fatal("uvm_agt", "failed to get interface from uvm_env")
         end
         uvm_config_db#(virtual flex_counter_if)::set(this, "fc_sqr", "fcif", fcif);
         uvm_config_db#(virtual flex_counter_if)::set(this, "fc_drv", "fcif", fcif);
-        uvm_config_db#(virtual flex_counter_if)::set(this, "fc_mon", "fcif", fcif);
+        uvm_config_db#(virtual flex_counter_if)::set(this, "fc_mon", "fcif", fcif);*/
     endfunction: build_phase
 
     function void connect_phase(uvm_phase phase);

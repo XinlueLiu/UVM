@@ -13,11 +13,13 @@ class fc_sequence extends uvm_sequence #(fc_transaction);
     task body();
         fc_transaction fc_item;
         fc_item = fc_transaction::type_id::create("fc_item");
-        start_item(fc_item);
-        if (!fc_item.randomize()) begin
-            `uvm_fatal("sequence_item_randomization", "cannot randomize inputs of fc_item");            
+        repeat(10) begin
+            start_item(fc_item);
+            if (!fc_item.randomize()) begin
+                `uvm_fatal("sequence_item_randomization", "cannot randomize inputs of fc_item");            
+            end
+            finish_item(fc_item);
         end
-        finish_item(fc_item);
     endtask : body
     
 endclass: fc_sequence

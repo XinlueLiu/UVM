@@ -9,7 +9,7 @@ import uvm_pkg::*;
 class fc_env extends uvm_env;
     `uvm_component_utils(fc_env)
 
-    virtual flex_counter_if fcif;
+    //virtual flex_counter_if fcif;
     fc_agent fc_agt;
     fc_predictor fc_pred;
     fc_comparator fc_comp;
@@ -24,10 +24,10 @@ class fc_env extends uvm_env;
         fc_comp = fc_comparator::type_id::create("fc_comp", this);
 
         //get the interface and pass the interface down
-        if (!uvm_config_db#(virtual flex_counter_if)::get(this, "", "fcif", fcif)) begin
+        /*if (!uvm_config_db#(virtual flex_counter_if)::get(this, "", "fcif", fcif)) begin
           `uvm_fatal("uvm_env", "failed to get interface from uvm_test")
         end
-        uvm_config_db#(virtual flex_counter_if)::set(this, "fc_agt", "fcif", fcif);
+        uvm_config_db#(virtual flex_counter_if)::set(this, "*", "fcif", fcif);*/
     endfunction
 
     function void connect_phase(uvm_phase phase);

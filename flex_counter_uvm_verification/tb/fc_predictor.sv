@@ -19,8 +19,14 @@ class fc_predictor extends uvm_subscriber #(fc_transaction);
         fc_transaction fc_tx_output;
         fc_tx_output = fc_transaction::type_id::create("fc_tx_output", this);
         fc_tx_output.copy(t);
-        fc_tx_output.count_out = 1'b1; //to be changed
-        fc_tx_output.rollover_flag = 1'b0;
+        fc_tx_output.count_out = 1; //to be changed
+
+
+        if (fc_tx_output.count_out == t.count_out) begin
+            fc_tx_output.rollover_flag = 1;
+        end else begin
+            fc_tx_output.rollover_flag = 0;
+        end
         fc_pred_ap.write(fc_tx_output);
     endfunction : write
 

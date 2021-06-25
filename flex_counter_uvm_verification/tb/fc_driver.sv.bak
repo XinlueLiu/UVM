@@ -13,7 +13,6 @@ class fc_driver extends uvm_driver #(fc_transaction);
 	endfunction: new
 
     function void build_phase(uvm_phase phase);
-        super.build_phase(phase);
         if (!uvm_config_db#(virtual flex_counter_if)::get(this, "", "fcif", fcif)) begin
             `uvm_fatal("uvm_drv", "failed to get interface from uvm_agt")
         end
@@ -24,11 +23,12 @@ class fc_driver extends uvm_driver #(fc_transaction);
             fc_transaction fc_tx;
             @(posedge fcif.driver_ck);
             seq_item_port.get_next_item(fc_tx);
-            @(posedge fcif.driver_ck);
             fcif.clear = fc_tx.clear;
             fcif.count_enable = fc_tx.count_enable;
             fcif.rollover_val = fc_tx.rollover_val;
-	        @(posedge fcif.driver_ck);
+            repeat(6) begin
+                @(posedge fcif.driver_ck);
+            end
             seq_item_port.item_done(); //transaction complete
         end
     endtask : run_phase

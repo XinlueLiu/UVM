@@ -17,7 +17,7 @@ class fc_test extends uvm_test;
     endfunction
 
     function void build_phase(uvm_phase phase);
-        super.build_phase(phase);
+        //super.build_phase(phase);
         //create the instance env and seq
         env = fc_env::type_id::create("env", this);
         //sequence is uvm_object, so no parent
