@@ -11,72 +11,100 @@ import FIFO_param_pkg::*;
 
 //fifo_count to determine full or empty
 logic [FIFO_ADDR - 1: 0] fifo_count;
-logic [FIFO_ADDR - 1: 0] nxt_fifo_count;
 
 //the 32 bytes depth and 4 bytes wide FIFO
 logic [FIFO_DEPTH - 1: 0][WIDTH - 1: 0] fifo_memory; 
-logic [FIFO_DEPTH - 1: 0][WIDTH - 1: 0] nxt_fifo_memory; 
 
 //read pointer and write pointer to manipulate data
 logic [FIFO_ADDR - 1: 0] rd_ptr;
-logic [FIFO_ADDR - 1: 0] nxt_rd_ptr;
 logic [FIFO_ADDR - 1: 0] wr_ptr;
-logic [FIFO_ADDR - 1: 0] nxt_wr_ptr;
 
-always_ff @( posedge CLK, negedge nRST ) begin : COUNT_LOGIC
+always_ff posedge CLK , negedge nRST) begin : COUNT_LOGIC
     if (!nRST) begin
         fifo_count <= '0;
-        fifo_memory <= '0;
-        rd_ptr <= '0;
-        wr_ptr <= '0;
     end else begin
-        fifo_count <= nxt_fifo_count;
-        fifo_memory <= nxt_fifo_memory;
-        rd_ptr <= nxt_rd_ptr;
-        wr_ptr <= nxt_wr_ptr;
+        //if FIFO is not full and trying to write
+        if ((fifo_count != FIFO_ADDR) && fifo_mem.mem_wr_en) begin
+            fifo_count <= fifo_count + 1'b1;
+        //if FIFO is not empty and trying to read
+        end else if ((fifo_count != 0) && fifo_mem.mem_rd_en) begin
+            fifo_count <= fifo_count - 1'b1;
+        end else begin
+            //default case
+            //if FIFO is full and trying to write
+            //if FIFO is empty and trying to read
+            //if trying to read and write at the same time, fifo_count keeps the same
+            fifo_count <= fifo_count;
+        end
     end
 end
 
-always_comb begin : NXT_COUNT_LOGIC
-    nxt_fifo_count = fifo_count;
-    nxt_fifo_memory = fifo_memory;
-    nxt_rd_ptr = rd_ptr;
-    nxt_wr_ptr = wr_ptr;
-    casez ({mem_rd_en, mem_wr_en})
-        2'b01 : begin
-            //wrap around condition when fifo_count < FIFO_DEPTH but wr_ptr || rd_ptr has reached the FIFO_DEPTH        
-            if (wr_ptr == FIFO_DEPTH) begin
-                nxt_wr_ptr = 0;
-            end
-            //when only memory write signal is asserted
-            if (fifo_count < FIFO_DEPTH) begin
-                nxt_fifo_memory[wr_ptr] = fifo_wr_data;
-                nxt_fifo_count++;
-                //increment the write pointer
-                nxt_wr_ptr++;
-            end else begin
-                fifo_mem.wr_full_err = 1'b1; //assert fifo_full error
-            end
+always_ff @(posedge CLK , negedge nRST) begin : MEMORY_CONDITION_LOGIC
+    if (!nRST) begin
+        fifo_mem.mem_full <= '0;
+        fifo_mem.mem_empty <= '0;
+    end else begin
+        if (fifo_count == FIFO_ADDR) begin
+            fifo_mem.mem_full <= '1;
+        end else if (fifo_count == '0) begin
+            fifo_mem.mem_empty <= '1;
+        end else begin
+            //if neither, reset the signal
+            fifo_mem.mem_empty <= '0;
+            fifo_mem.mem_full <= '0;
         end
-        2'b10 : begin
-            //wrap around condition
-            if (rd_ptr == FIFO_DEPTH) begin
-                nxt_rd_ptr = 0;
-            end
-            if (fifo_count > 0) begin
-                fifo_mem.fifo_rd_data = fifo_memory[rd_ptr];
-                nxt_fifo_count--;
-                //increment the read pointer
-                nxt_rd_ptr++;
-            end else begin
-                fifo_mem.rd_empty_err = 1'b1; //assert fifo_empty error
-            end
-        end
-        2'b11 : begin
-            //will not generate wr_full_err or rd_empty_err because we are reading and writing
-            nxt_fifo_memory[wr_ptr] = fifo_wr_data;
-            fifo_mem.fifo_rd_data = fifo_memory[rd_ptr];
-        end
-    endcase
+    end
 end
+
+
+always_ff posedge CLK , negedge nRST) begin : OUTPUT_LOGIC 
+    if (!nRST) begin
+        fifo_mem.fifo_rd_data <= '0;
+        fifo_mem.mem_wr_err <= '0;
+        fifo_mem.mem_rd_err <= '0;
+        rd_ptr <= '0;
+        wr_ptr <= '0;
+    end else begin
+        //if fifo is full and trying to write
+        if ((fifo_count == FIFO_ADDR) && fifo_mem.mem_wr_en) begin
+            fifo_mem.mem_wr_err <= '1;
+        //if fifo is empty and trying to read
+        end else if ((fifo_count == 0) && fifo_em.mem_rd_en) begin
+            //output all zeros as trying to read an empty fifo
+            fifo_mem.fifo_rd_data <= '0;
+            fifo_mem.mem_rd_err <= '1;
+
+        //if rd_ptr or wr_ptr reaches the top, and if its not full
+        //we wrap around the fifo
+         
+        //if fifo is NOT full and trying to write
+        end else if ((fifo_count != FIFO_ADDR) && fifo_mem.mem_wr_en) begin
+            fifo_memory[wr_ptr] <= fifo_mem.fifo_wr_data;
+            if (wr_ptr != '1) begin
+                ++wr_ptr;
+            end else begin
+                wr_ptr <= '0;
+            end
+        //if fifo is NOT empty and trying to read
+        end else if ((fifo_count != 0) && fifo_em.mem_rd_en) begin
+            fifo_mem.fifo_rd_data <= fifo_memory[rd_ptr];
+            if (rd_ptr != '1) begin
+                ++rd_ptr;
+            end else begin
+                rd_ptr <= '0;
+            end
+            
+        //if trying to read and write at the same time
+        end else if (fifo_mem.mem_wr_en && fifo_em.mem_rd_en) begin
+            fifo_memory[wr_ptr] <= fifo_mem.fifo_wr_data;
+            fifo_mem.fifo_rd_data <= fifo_memory[rd_ptr];
+        end else begin
+            //default case
+            fifo_mem.fifo_rd_data <= fifo_mem.fifo_rd_data;
+            fifo_mem.mem_wr_err <= fifo_mem.mem_wr_err;
+            fifo_mem.mem_rd_err <= fifo_mem.mem_rd_err;
+        end
+    end
+end
+
 endmodule
