@@ -2,7 +2,7 @@
 `include "fifo_if.svh"
 
 module fifo_write(
-    input CLK, nRST, fifo_if.FIFO_wr fifo_wr;
+    input CLK, nRST, fifo_if.FIFO_wr fifo_wr
 );
 
 always_ff @(posedge CLK , negedge nRST) begin
