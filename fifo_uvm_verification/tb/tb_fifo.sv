@@ -1,105 +1,66 @@
-`include "fifo_param_pkg.svh"
+/*
+This is the top level module that generates CLK and nRST signal. It also 
+instantiate the DUT and the interface, and connect them together. In addition, it also instantiates
+the UVM_test module and pass the interface down to the components.
+*/
+
+/*uvm_pkg contains all uvm classes needed to build the verification environment. When we import the uvm_pkg, all the predefined
+classess are available to use. So everyone uses similar modeling and code becomes more readable. 
+So we are deriving objects from the predefined classes from uvm_pkg, register our variables with uvm_factory,
+and use predefined tasks and functions. 
+*/
+import uvm_pkg::*;
+`include "uvm_macros.svh"
+//include the fifo design .sv file
+`include "fifo.sv"
+//include the interface file
 `include "fifo_if.svh"
+//include the parameter file
+`include "fifo_param_pkg.svh"
+//include the uvm_test file
+`include "fifo_test.sv"
 
 `timescale 1ps/1ps
-
-module tb_fifo ();
-    import fifo_param_pkg::*;
-
-    parameter PERIOD = 10;
-    logic CLK = 0, nRST;
-
-    int tb_test_num;
-    string tb_test_case;
-
-    bit [3:0] i;
-    integer j,k;
+module tb_fifo;
+    logic CLK, nRST;
 
     //clock generation
-    always #(PERIOD / 2) CLK++;
-
-    fifo_if fifo_if();
-
-    fifo DUT(
-        .CLK(CLK), 
-        .nRST(nRST),
-        .syn_fifo_if(fifo_if)
-    );
-    
-    task reset_dut;
-        begin
-            nRST = 1'b0;
-            @(posedge CLK);
-            @(posedge CLK);
-
-            @(negedge CLK);
-            nRST = 1'b1;
-            @(posedge CLK);
-            @(posedge CLK);
-        end
-    endtask
-
     initial begin
-        tb_test_num = -1;
-        tb_test_case = "TB_test_init";
-        fifo_if.fifo_wr_en = '0;
-        fifo_if.fifo_rd_en = '0;
-        fifo_if.fifo_wr_data = '0;
-        i = '0;
-        reset_dut();
-
-        //test1, write 2 times
-        @(posedge CLK);
-        tb_test_num++;
-        tb_test_case = "test1, write 2 times";
-        fifo_if.fifo_wr_en = '1;
-        fifo_if.fifo_wr_data = ++i;
-        //wait a clock for mem_wr_en to be asserted
-        @(posedge CLK);
-        fifo_if.fifo_wr_data = ++i;
-        @(posedge CLK);
-        fifo_if.fifo_wr_en = '0;
-        
-        //test2, read 2 times
-        //read requires one more cycle to proceed
-        tb_test_num++;
-        tb_test_case = "test2, read 2 times";
-        fifo_if.fifo_rd_en = '1;
-        repeat(2) @(posedge CLK);
-        fifo_if.fifo_rd_en = '0;
-        repeat(2) @(posedge CLK);
-        //test3, write and read at the same time
-        tb_test_num++;
-        tb_test_case = "test3, write and read at the same time";
-        fifo_if.fifo_wr_en = '1;
-        fifo_if.fifo_rd_en = '1;
-        fifo_if.fifo_wr_data = ++i;
-        repeat(4) @(posedge CLK);
-        //fifo_if.fifo_wr_data = ++i;
-        //repeat(2) @(posedge CLK);
-        fifo_if.fifo_wr_en = '0;
-        fifo_if.fifo_rd_en = '0;
-        reset_dut();
-        //test4, write more than 32 times
-        tb_test_num++;
-        tb_test_case = "test4, write more than 32 times";
-        fifo_if.fifo_wr_en = '1;
-        for (j = 0; j < 37; ++j) begin
-            @(posedge CLK);
-            fifo_if.fifo_wr_data = ++i;
+        CLK <= 0;
+        forever begin
+            #5 CLK <= !CLK;
         end
-        @(posedge CLK);
-        fifo_if.fifo_wr_en = '0;
-        repeat(4) @(posedge CLK);
-
-        //test5, read more than 32 times
-        tb_test_num++;
-        tb_test_case = "test5, read more than 32 times";
-        fifo_if.fifo_rd_en = '1;
-        repeat(40) @(posedge CLK);
-        fifo_if.fifo_wr_en = '0;
-        repeat(4) @(posedge CLK);
-        $finish();
     end
 
+    //reset generation
+    initial begin
+        #10 nRST <= 0;
+        repeat(10) @(posedge CLK);
+        nRST <= 1;
+    end
+
+    //instantiate the interface
+    fifo_if syn_fifo_if(.CLK(CLK));
+
+    //instantiate the DUT
+    fifo DUT(
+        .CLK(CLK),
+        .nRST(nRST),
+        .syn_fifo_if(syn_fifo_if)
+    );
+
+    initial begin
+        //This uvm_config_db can transfer from one layer to another layer
+        //static set. type of value, prefix, path, field name, and value. 
+        //prefix+path will set/get the hierarchy path
+        //so it passes the interface down to the components
+
+        //a virtual interface instantiates an actual interface. Because interface is static and classes are dynamic, we cannot declare interface within classes, 
+        //but we can refer to the interface(declare a virtual interface to point to the interface)
+        //"virtual interfaces provide a mechanism for separating abstract models and test programs from the actual signals that make up the design"
+        uvm_config_db#(virtual fifo_if)::set(null, "*", "syn_fifo_if", syn_fifo_if);
+        //create an instance of the fc_test class and execute the specific test
+        run_test("fifo_basic_test");
+    end
+    
 endmodule

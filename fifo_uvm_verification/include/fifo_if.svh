@@ -3,7 +3,9 @@
 
 `include "fifo_param_pkg.svh"
 
-interface fifo_if;
+`timescale 1ps/1ps
+
+interface fifo_if(input bit CLK);
     import fifo_param_pkg::*;
 
     //FIFO WRITE LOGIC
@@ -17,6 +19,19 @@ interface fifo_if;
     logic fifo_empty;
     logic fifo_rd_err;
     logic [FIFO_WIDTH - 1: 0] fifo_rd_data; //data to read from fifo memory
+
+    clocking driver_ck @(posedge CLK);
+        //clock skews may be defined
+        //default input #1 output #1;
+        input fifo_full, fifo_wr_err, fifo_empty, fifo_rd_err, fifo_rd_data;
+        output fifo_wr_en, fifo_wr_data, fifo_rd_en;
+    endclocking: driver_ck
+
+    clocking monitor_ck @(posedge CLK);
+        //clock skews may be defined
+        //default input #1 output #1;
+        input fifo_full, fifo_wr_err, fifo_empty, fifo_rd_err, fifo_rd_data,fifo_wr_en, fifo_wr_data, fifo_rd_en;
+    endclocking: monitor_ck
 
     modport fifo (
     input fifo_wr_en, fifo_wr_data, fifo_rd_en,
