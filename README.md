@@ -1,4 +1,6 @@
 # UVM
+# Notes
+- The notes about the UVM can be found in the notes/UVM_Notes.pdf. I am continuously updating this pdf file. The sv_notes.sv and uvm_notes.sv are for references.
 ## FLEX_COUNTER_UVM_VERIFICATION
    - This project is the starting point to learn UVM. The RTL diagram about the flex counter and uvm structure design can be found in the doc folder.
    - Reference: tutorial by Chipverify(https://www.chipverify.com/uvm/uvm-tutorial), Zhengsen, verification academy "Introduction to UVM" (https://verificationacademy.com/courses/introduction-to-the-uvm) and "UVM Basics" (https://verificationacademy.com/courses/uvm-basics). Greatly appreciate their efforts. 
