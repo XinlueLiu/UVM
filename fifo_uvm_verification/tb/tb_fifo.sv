@@ -58,7 +58,7 @@ module tb_fifo;
         //a virtual interface instantiates an actual interface. Because interface is static and classes are dynamic, we cannot declare interface within classes, 
         //but we can refer to the interface(declare a virtual interface to point to the interface)
         //"virtual interfaces provide a mechanism for separating abstract models and test programs from the actual signals that make up the design"
-        uvm_config_db#(virtual fifo_if)::set(null, "*", "syn_fifo_if", syn_fifo_if);
+        uvm_config_db#(virtual fifo_if)::set(this, "*", "syn_fifo_if", syn_fifo_if);
         //create an instance of the fc_test class and execute the specific test
         run_test("fifo_basic_test");
     end

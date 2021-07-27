@@ -6,18 +6,21 @@ import uvm_pkg::*;
 
 class fifo_agent extends uvm_agent;
     `uvm_component_utils(fifo_agent)
-    sequencer sqr;
-    driver drv;
-    monitor mon;
+    fifo_sequencer sqr;
+    fifo_driver drv;
+    fifo_monitor mon;
 
-    function new(string name = "fifo_agent", uvm_component parent);
+    function new(string name = "fifo_agent", uvm_component parent = null);
         super.new(name, parent);
     endfunction
 
     //virtual function
     function void build_phase(uvm_phase phase);
-        sqr = fifo_sequencer::type_id::create("sqr", this);
-        dvr = fifo_driver::type_id::create("dvr", this);
+        //if this UVM agent is active, then build the driver and sequencer
+        if (get_is_active()) begin
+            sqr = fifo_sequencer::type_id::create("sqr", this);
+            dvr = fifo_driver::type_id::create("dvr", this);
+        end
         mon = fifo_monitor::type_id::create("mon", this);
     endfunction 
 
