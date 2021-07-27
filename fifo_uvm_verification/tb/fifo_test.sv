@@ -30,8 +30,8 @@ class fifo_basic_test extends uvm_test;
       seq = fifo_sequence::type_id::create("seq");
 
       //get the interface from the config_db
-      if (!uvm_config_db#(virtual fifo_if)::get(this, "*", "syn_fifo_if", syn_fifo_if)) begin
-          `uvm_fatal("fifo_test", "failed to get interface")
+      if (!uvm_config_db#(virtual fifo_if)::get(this, "", "syn_fifo_if", syn_fifo_if)) begin
+          `uvm_fatal(get_type_name(), "failed to get handle to virtual interface")
       end
 
       //TODO: remove this and see if the agent can get the interface
